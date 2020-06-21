@@ -1,26 +1,32 @@
 ## Provison a jumpbox
 
+```
 git clone https://github.com/making/terraforming-jumpbox
 cd terraforming-jumpbox
 cp terraform.tfvars.sample terraform.tfvars
 terraform plan -out plan
 terraform apply plan
 ./ssh-jumpbox.sh
+```
 
 ## Install CLIs on jumpbox
 
+```
 ./provison.sh
 pivnet login --api-token=****
-
+```
 ## Pave AWS env
 
+```
 mkdir ~/workspace
 cd ~/workspace
 git clone https://github.com/pivotal/paving.git
 cd paving
+```
 
 ### Apply patches
 
+```
 git remote add voor https://github.com/voor/paving.git
 git remote add making https://github.com/making/paving.git
 git fetch voor add-kubernetes-tags
@@ -29,9 +35,11 @@ git fetch making force-destroy-buckets
 git cherry-pick -x ef6d4965a19c489bfe3dbbb0a9c5faa167f70475
 git cherry-pick -x 1ad99f8224d9e7662f2a2474ed437e907c2f4d56
 git cherry-pick -x 85a8832a797ac2e15fb607d59733c6ed56188887
+```
 
 ### Run terraform
 
+```
 export TF_VAR_region=ap-south-1
 export TF_VAR_access_key=AKIA**********
 export TF_VAR_secret_key=******
@@ -43,9 +51,11 @@ cd aws
 terraform init
 terraform plan -out plan
 terraform apply plan
+```
 
 ## Download Pivnet files
 
+```
 mkdir ~/workspace/pivnet
 cd ~/workspace/pivnet
 pivnet download-product-files --product-slug='elastic-runtime' --release-version='2.9.5' --product-file-id=709121
@@ -55,9 +65,11 @@ sudo install pks-linux-amd64-1.7.0-build.483 /usr/local/bin/pks
 pivnet download-product-files --product-slug='platform-automation' --release-version='4.4.3' --product-file-id=709887
 tar xvf platform-automation-image-4.4.3.tgz ./rootfs/usr/bin/p-automator
 sudo install rootfs/usr/bin/p-automator /usr/local/bin/
+```
 
 ## Create ops manager vm
 
+```
 mkdir -p ~/workspace/config/${TF_VAR_environment_name}/ops-manager
 cd ~/workspace/config/${TF_VAR_environment_name}/ops-manager
 
@@ -72,9 +84,11 @@ p-automator create-vm \
   --image-file ${HOME}/workspace/pivnet/ops-manager-aws-2.9.5-build.144.yml \
   --state-file ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/state.yml \
   --vars-file ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/vars.yml
+```
 
 ## Configure authentication
 
+```
 cd ~/workspace/config/${TF_VAR_environment_name}/ops-manager
 
 export OM_USERNAME=admin
@@ -101,9 +115,11 @@ om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml
   --skip-ssl-validation \
   configure-authentication \
   --config ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/auth.yml
+```
 
 ## Generate and configure let's encrypt
 
+```
 mkdir -p ~/workspace/letsencrypt
 cd ~/workspace/letsencrypt
 
@@ -139,9 +155,11 @@ om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml
   --config <(bosh int ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/ssl-certificate.yml \
     --var-file ssl_certificate=${HOME}/workspace/letsencrypt/.lego/certificates/_.${SUBDOMAIN}.crt \
     --var-file ssl_private_key=${HOME}/workspace/letsencrypt/.lego/certificates/_.${SUBDOMAIN}.key)
+```
 
 ## Configrue director
 
+```
 mkdir -p ~/workspace/config/${TF_VAR_environment_name}/director
 cd ~/workspace/config/${TF_VAR_environment_name}/director
 
@@ -151,9 +169,11 @@ om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml
   configure-director \
   --config ${HOME}/workspace/config/${TF_VAR_environment_name}/director/config.yml \
   --vars-file ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/vars.yml
+```
 
 ## Configrue TAS
 
+```
 mkdir -p ~/workspace/config/${TF_VAR_environment_name}/tas
 cd ~/workspace/config/${TF_VAR_environment_name}/tas
 wget https://raw.githubusercontent.com/making/platform-automation/master/config/aws/sandbox/tas/config.yml
@@ -171,9 +191,11 @@ om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml
     --var-file ssl_certificate=${HOME}/workspace/letsencrypt/.lego/certificates/_.${SUBDOMAIN}.crt \
     --var-file ssl_private_key=${HOME}/workspace/letsencrypt/.lego/certificates/_.${SUBDOMAIN}.key) \
   --vars-file ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/vars.yml
+```
 
 ## Configure TKGI
 
+```
 mkdir -p ~/workspace/config/${TF_VAR_environment_name}/tkgi
 cd ~/workspace/config/${TF_VAR_environment_name}/tkgi
 wget https://raw.githubusercontent.com/making/platform-automation/master/config/aws/sandbox/tkgi/config.yml
@@ -191,20 +213,26 @@ om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml
     --var-file ssl_certificate=${HOME}/workspace/letsencrypt/.lego/certificates/_.${SUBDOMAIN}.crt \
     --var-file ssl_private_key=${HOME}/workspace/letsencrypt/.lego/certificates/_.${SUBDOMAIN}.key) \
   --vars-file ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/vars.yml
+```
 
 ## Apply changes
 
+```
 om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml \
   apply-changes
+```
 
 ## Verify TAS
 
+```
 TAS_SYS_DOMAIN=$(bosh int ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/vars.yml --path /sys_dns_domain)
 TAS_ADMIN_SECRET=$(om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml credentials -p cf -c .uaa.admin_client_credentials -f password)
 TAS_ADMIN_PASSWORD=$(om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml credentials -p cf -c .uaa.admin_credentials -f password)
+```
 
 ### Login to CF as admin
 
+```
 cf login -a api.${TAS_SYS_DOMAIN} -u admin -p ${TAS_ADMIN_PASSWORD} -o system -s system
 
 cf create-org demo
@@ -215,14 +243,18 @@ echo '<?php echo "Hello World!";' > /tmp/hello/index.php
 cf push hello -m 32m -p /tmp/hello -b php_buildpack
 cf logs hello --recent
 cf ssh hello
+```
 
 ### Loing to UAA as admin client
 
+```
 uaac target https://uaa.${TAS_SYS_DOMAIN}
 uaac token client get admin -s ${TAS_ADMIN_SECRET}
+```
 
 ## Verify TKGI
 
+```
 TKGI_API_DNS=$(bosh int ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/vars.yml --path /pks_api_dns)
 TKGI_ADMIN_SECRET=$(om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml  credentials -p pivotal-container-service -c .properties.pks_uaa_management_admin_client -f secret)
 TKGI_ADMIN_PASSWORD=$(om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml  credentials -p pivotal-container-service -c .properties.uaa_admin_password -f secret)
@@ -231,9 +263,11 @@ pks login -a ${TKGI_API_DNS} -k -u admin -p ${TKGI_ADMIN_PASSWORD}
 
 sudo wget -O /usr/local/bin/pks-aws https://raw.githubusercontent.com/making/pks-cli-aws/master/pks-aws
 sudo chmod +x /usr/local/bin/pks-aws
+```
 
 ### Create a cluster
 
+```
 ENV_NAME=${TF_VAR_environment_name}
 CLUSTER_NAME=cluster01
 
@@ -251,28 +285,37 @@ kubectl create deployment demo --image=making/hello-cnb --dry-run -o=yaml > /tmp
 echo --- >> /tmp/deployment.yaml
 kubectl create service loadbalancer demo --tcp=8080:8080 --dry-run -o=yaml >> /tmp/deployment.yaml
 kubectl apply -f /tmp/deployment.yaml
+```
 
-~~#~~## Delete a cluster
+## Delete a cluster
 
+```
 kubectl delete -f /tmp/deployment.yaml
 pks-aws delete-tags ${CLUSTER_NAME} ${ENV_NAME}
 pks-aws delete-lb ${CLUSTER_NAME}
 pks delete-cluster ${CLUSTER_NAME} --wait --non-interactive
+```
 
 ## Delete installation
 
+```
 om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml \
   delete-installation \
   --force
+```
 
 ## Delete ops manager vm
 
+```
 p-automator delete-vm \
   --config ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/config.yml \
   --state-file ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/state.yml \
   --vars-file ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/vars.yml
+```
 
 ## Wipe AWS env
 
+```
 cd ~/workspace/paving/aws
 terraform destroy -auto-approve
+```
