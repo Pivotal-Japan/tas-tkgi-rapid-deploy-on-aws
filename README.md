@@ -61,6 +61,7 @@ terraform apply plan
 pivnet login --api-token=****
 mkdir ~/workspace/pivnet
 cd ~/workspace/pivnet
+pivnet download-product-files --product-slug='ops-manager' --release-version='2.9.5' --product-file-id=713247
 pivnet download-product-files --product-slug='elastic-runtime' --release-version='2.9.5' --product-file-id=709121
 pivnet download-product-files --product-slug='pivotal-container-service' --release-version='1.7.0' --product-file-id=649104
 pivnet download-product-files --product-slug='pivotal-container-service' --release-version='1.7.0' --product-file-id=646536
