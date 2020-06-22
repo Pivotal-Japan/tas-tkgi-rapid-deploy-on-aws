@@ -32,10 +32,10 @@ git checkout -b custom
 git remote add voor https://github.com/voor/paving.git
 git remote add making https://github.com/making/paving.git
 git fetch voor add-kubernetes-tags
-git fetch making add-s3-permissions
+git fetch making tas-iam
 git fetch making force-destroy-buckets
 git cherry-pick -x ef6d4965a19c489bfe3dbbb0a9c5faa167f70475
-git cherry-pick -x 1ad99f8224d9e7662f2a2474ed437e907c2f4d56
+git cherry-pick -x e57dab5353111a5792f09a56d2612b1a871ba7d1
 git cherry-pick -x 85a8832a797ac2e15fb607d59733c6ed56188887
 ```
 
