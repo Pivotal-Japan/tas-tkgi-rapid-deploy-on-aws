@@ -39,6 +39,13 @@ git cherry-pick -x e57dab5353111a5792f09a56d2612b1a871ba7d1
 git cherry-pick -x 85a8832a797ac2e15fb607d59733c6ed56188887
 ```
 
+If you want to set ACM for LB, patch following as well.
+
+```
+git fetch making acm
+git cherry-pick -x 1ed201399a083e04585f8a4590be5fcfcdfce64d
+```
+
 ### Run terraform
 
 ```
