@@ -79,7 +79,7 @@ cd ~/workspace/config/${TF_VAR_environment_name}/ops-manager
 
 terraform output -state=${HOME}/workspace/paving/aws/terraform.tfstate -json \
    | bosh int - --path /stable_config/value \
-   | bosh int - > vars.yml
+   | bosh int - > ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/vars.yml
 
 wget https://raw.githubusercontent.com/making/platform-automation/master/config/aws/sandbox/ops-manager/config.yml
 
