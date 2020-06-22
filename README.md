@@ -12,8 +12,10 @@ terraform apply plan
 ## Install CLIs on jumpbox
 
 ```
-./provison.sh
+chmod +x ./provision.sh 
+./provision.sh
 ```
+
 ## Pave AWS env
 
 ```
