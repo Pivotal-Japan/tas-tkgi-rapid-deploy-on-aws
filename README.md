@@ -291,6 +291,55 @@ kubectl create service loadbalancer demo --tcp=8080:8080 --dry-run -o=yaml >> /t
 kubectl apply -f /tmp/deployment.yaml
 ```
 
+cat <<PEM > /tmp/opsman-${TF_VAR_hosted_zone}.pem
+$(bosh int ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/vars.yml --path /ops_manager_ssh_private_key)
+PEM
+chmod 600 /tmp/opsman-${TF_VAR_hosted_zone}.pem
+ssh -o "StrictHostKeyChecking=no" \
+    -o "ServerAliveInterval=15" \
+    -i /tmp/opsman-${TF_VAR_hosted_zone}.pem \
+    ubuntu@$(bosh int ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/vars.yml --path /ops_manager_dns) "$(cat <<EOF
+cat <<ENV | sudo tee -a /etc/profile.d/bosh.sh > /dev/null
+$(om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml bosh-env)
+ENV
+EOF
+)"
+
+## SSH into Ops Manager
+
+```
+# configure BOSH envionment variables on opsmanager
+cat <<PEM > /tmp/opsman-${TF_VAR_hosted_zone}.pem
+$(bosh int ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/vars.yml --path /ops_manager_ssh_private_key)
+PEM
+chmod 600 /tmp/opsman-${TF_VAR_hosted_zone}.pem
+ssh -o "StrictHostKeyChecking=no" \
+    -o "ServerAliveInterval=15" \
+    -i /tmp/opsman-${TF_VAR_hosted_zone}.pem \
+    ubuntu@$(bosh int ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/vars.yml --path /ops_manager_dns) "$(cat <<EOF
+cat <<ENV | sudo tee -a /etc/profile.d/bosh.sh > /dev/null
+$(om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml bosh-env)
+ENV
+EOF
+)"
+```
+
+```
+cat <<SCRIPT > /tmp/ssh-opsman-${TF_VAR_hosted_zone}.sh
+#!/bin/bash
+cat <<PEM > /tmp/opsman-${TF_VAR_hosted_zone}.pem
+$(bosh int ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/vars.yml  --path /ops_manager_ssh_private_key)
+PEM
+chmod 600 /tmp/opsman-${TF_VAR_hosted_zone}.pem
+ssh -o "StrictHostKeyChecking=no" -o "ServerAliveInterval=15" -i /tmp/opsman-${TF_VAR_hosted_zone}.pem ubuntu@$(bosh int ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/vars.yml  --path /ops_manager_dns) "\$@"
+SCRIPT
+chmod +x /tmp/ssh-opsman-${TF_VAR_hosted_zone}.sh
+```
+
+```
+/tmp/ssh-opsman-${TF_VAR_hosted_zone}.sh
+```
+
 ## Delete a cluster
 
 ```
