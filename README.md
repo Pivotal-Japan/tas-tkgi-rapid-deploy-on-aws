@@ -13,7 +13,6 @@ terraform apply plan
 
 ```
 ./provison.sh
-pivnet login --api-token=****
 ```
 ## Pave AWS env
 
@@ -22,6 +21,7 @@ mkdir ~/workspace
 cd ~/workspace
 git clone https://github.com/pivotal/paving.git
 cd paving
+git checkout -b custom
 ```
 
 ### Apply patches
@@ -56,6 +56,7 @@ terraform apply plan
 ## Download Pivnet files
 
 ```
+pivnet login --api-token=****
 mkdir ~/workspace/pivnet
 cd ~/workspace/pivnet
 pivnet download-product-files --product-slug='elastic-runtime' --release-version='2.9.5' --product-file-id=709121
