@@ -168,7 +168,7 @@ om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml
     --var-file ssl_private_key=${HOME}/workspace/letsencrypt/.lego/certificates/_.${SUBDOMAIN}.key)
 ```
 
-## Configrue director
+## Configure director
 
 ```
 mkdir -p ~/workspace/config/${TF_VAR_environment_name}/director
@@ -182,7 +182,7 @@ om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml
   --vars-file ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/vars.yml
 ```
 
-## Configrue TAS
+## Configure TAS
 
 ```
 mkdir -p ~/workspace/config/${TF_VAR_environment_name}/tas
@@ -226,6 +226,48 @@ om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml
   --vars-file ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/vars.yml
 ```
 
+## Configure Harbor
+
+### Apply patches to Harbor terraforming
+
+```
+cd ~/workspace/paving
+git remote add kenojiri https://github.com/kenojiri/paving.git
+git fetch kenojiri current
+git cherry-pick -x bbfc1cf74a7573ad17f47eecc1ba9928d693b6db
+export TF_VAR_harbor=true
+cd aws
+terraform plan -out plan
+terraform apply plan
+terraform output -state=${HOME}/workspace/paving/aws/terraform.tfstate -json \
+   | bosh int - --path /stable_config/value \
+   | bosh int - > ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/vars.yml
+
+```
+
+### upload and configure Harbor tile
+
+```
+mkdir -p ~/workspace/config/${TF_VAR_environment_name}/harbor
+cd ~/workspace/config/${TF_VAR_environment_name}/harbor
+wget https://raw.githubusercontent.com/Pivotal-Japan/tas-tkgi-rapid-deploy-on-aws/master/harbor/config.yml
+
+om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml \
+  upload-product \
+  --product ${HOME}/workspace/pivnet/harbor-container-registry-1.10.3-build.1.pivotal
+om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml \
+  stage-product \
+  --product-name harbor-container-registry \
+  --product-version 1.10.3-build.1
+om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml  \
+  configure-product \
+  --config <(bosh int ${HOME}/workspace/config/${TF_VAR_environment_name}/harbor/config.yml \
+    --var-file ssl_certificate=${HOME}/workspace/letsencrypt/.lego/certificates/_.${SUBDOMAIN}.crt \
+    --var-file ssl_private_key=${HOME}/workspace/letsencrypt/.lego/certificates/_.${SUBDOMAIN}.key \
+    --var harbor_admin_password=${OM_PASSWORD}) \
+  --vars-file ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/vars.yml
+```
+
 ## Apply changes
 
 ```
@@ -241,7 +283,7 @@ TAS_ADMIN_SECRET=$(om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/
 TAS_ADMIN_PASSWORD=$(om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml credentials -p cf -c .uaa.admin_credentials -f password)
 ```
 
-### Login to CF as admin
+### Login to CF as admin, and run a PHP sample app
 
 ```
 cf login -a api.${TAS_SYS_DOMAIN} -u admin -p ${TAS_ADMIN_PASSWORD} -o system -s system
@@ -256,7 +298,7 @@ cf logs hello --recent
 cf ssh hello
 ```
 
-### Loing to UAA as admin client
+### Login to UAA as admin client
 
 ```
 uaac target https://uaa.${TAS_SYS_DOMAIN}
@@ -276,7 +318,7 @@ sudo wget -O /usr/local/bin/pks-aws https://raw.githubusercontent.com/making/pks
 sudo chmod +x /usr/local/bin/pks-aws
 ```
 
-### Create a cluster
+### Create a Kubernetes cluster
 
 ```
 ENV_NAME=${TF_VAR_environment_name}
@@ -291,7 +333,11 @@ pks create-cluster ${CLUSTER_NAME} -e ${MASTER_HOSTNAME} -p small -n 1 --wait
 pks-aws attach-lb ${CLUSTER_NAME}
 pks-aws create-tags ${CLUSTER_NAME} ${ENV_NAME}
 pks get-credentials ${CLUSTER_NAME}
+```
 
+### run a sample pod/service on k8s
+
+```
 kubectl create deployment demo --image=making/hello-cnb --dry-run -o=yaml > /tmp/deployment.yaml
 echo --- >> /tmp/deployment.yaml
 kubectl create service loadbalancer demo --tcp=8080:8080 --dry-run -o=yaml >> /tmp/deployment.yaml
