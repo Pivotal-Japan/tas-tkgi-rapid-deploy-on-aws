@@ -234,7 +234,7 @@ om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml
 cd ~/workspace/paving
 git remote add kenojiri https://github.com/kenojiri/paving.git
 git fetch kenojiri current
-git cherry-pick -x bbfc1cf74a7573ad17f47eecc1ba9928d693b6db
+git cherry-pick -x 9ca83ab28dfcb87222dd69f05ca064a3bcbd3419
 export TF_VAR_harbor=true
 cd aws
 terraform plan -out plan
