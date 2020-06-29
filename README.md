@@ -1,4 +1,4 @@
-## Provison a jumpbox
+## Provision a jumpbox
 
 ```
 git clone https://github.com/making/terraforming-jumpbox
