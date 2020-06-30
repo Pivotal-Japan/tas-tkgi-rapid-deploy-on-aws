@@ -250,7 +250,7 @@ terraform output -state=${HOME}/workspace/paving/aws/terraform.tfstate -json \
 ```
 mkdir -p ~/workspace/config/${TF_VAR_environment_name}/harbor
 cd ~/workspace/config/${TF_VAR_environment_name}/harbor
-wget https://raw.githubusercontent.com/Pivotal-Japan/tas-tkgi-rapid-deploy-on-aws/master/harbor/config.yml
+wget -O config.yml https://raw.githubusercontent.com/Pivotal-Japan/tas-tkgi-rapid-deploy-on-aws/master/harbor.yml
 
 cat <<EOF > ${HOME}/workspace/config/${TF_VAR_environment_name}/harbor/vars.yml
 harbor_admin_password: $(uuidgen)
