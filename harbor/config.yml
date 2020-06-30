@@ -57,7 +57,7 @@ resource-config:
     elb_names:
     - alb:((harbor_target_group))
     instance_type:
-      id: m5.large
+      id: t3.medium
     instances: automatic
     internet_connected: false
     persistent_disk:
