@@ -252,6 +252,10 @@ mkdir -p ~/workspace/config/${TF_VAR_environment_name}/harbor
 cd ~/workspace/config/${TF_VAR_environment_name}/harbor
 wget https://raw.githubusercontent.com/Pivotal-Japan/tas-tkgi-rapid-deploy-on-aws/master/harbor/config.yml
 
+cat <<EOF > ${HOME}/workspace/config/${TF_VAR_environment_name}/harbor/vars.yml
+harbor_admin_password: $(uuidgen)
+EOF
+
 om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml \
   upload-product \
   --product ${HOME}/workspace/pivnet/harbor-container-registry-1.10.3-build.1.pivotal
@@ -264,7 +268,8 @@ om --env ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/env.yml
   --config <(bosh int ${HOME}/workspace/config/${TF_VAR_environment_name}/harbor/config.yml \
     --var-file ssl_certificate=${HOME}/workspace/letsencrypt/.lego/certificates/_.${SUBDOMAIN}.crt \
     --var-file ssl_private_key=${HOME}/workspace/letsencrypt/.lego/certificates/_.${SUBDOMAIN}.key \
-    --var harbor_admin_password=${OM_PASSWORD}) \
+    --var-file ca_certificate=${HOME}/workspace/letsencrypt/.lego/certificates/_.${SUBDOMAIN}.issuer.crt) \
+  --vars-file ${HOME}/workspace/config/${TF_VAR_environment_name}/harbor/vars.yml \
   --vars-file ${HOME}/workspace/config/${TF_VAR_environment_name}/ops-manager/vars.yml
 ```
 
