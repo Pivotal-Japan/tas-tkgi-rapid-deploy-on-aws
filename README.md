@@ -245,7 +245,14 @@ terraform output -state=${HOME}/workspace/paving/aws/terraform.tfstate -json \
 
 ```
 
-### upload and configure Harbor tile
+### Download Harbor Tile
+
+```
+cd ~/workspace/pivnet
+pivnet download-product-files --product-slug='harbor-container-registry' --release-version='1.10.3' --product-file-id=709738
+```
+
+### Upload and configure Harbor tile
 
 ```
 mkdir -p ~/workspace/config/${TF_VAR_environment_name}/harbor
